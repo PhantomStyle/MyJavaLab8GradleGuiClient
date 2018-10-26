@@ -7,9 +7,12 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -101,10 +104,10 @@ public class Main extends Application {
     Button greenB;
 
     @FXML
-    CheckBox check;
+    Button check;
 
-    @FXML
-    BarChart<?, ?> gist;
+//    @FXML
+//    BarChart<?, ?> gist;
 
     @FXML
     Text text1;
@@ -147,12 +150,12 @@ public class Main extends Application {
 //        db.put("user", "user");
 //    }
 
-    private static Map<String, Color> colorMap = new HashMap<>();
+//    private static Map<String, Color> colorMap = new HashMap<>();
 
-    static {
-        colorMap.put("root", Color.BLACK);
-        colorMap.put("kek", Color.RED);
-    }
+//    static {
+//        colorMap.put("root", Color.BLACK);
+//        colorMap.put("kek", Color.RED);
+//    }
 
     private String name = "";
 
@@ -172,13 +175,14 @@ public class Main extends Application {
     private final CredentialsDao credentialsDao = new CredentialsDao();
     private static Connection conn;
 
-    static final String DB_URL = "jdbc:h2:E:\\FOR_WORK\\Универъ\\Lab8GradleGuiClient\\src\\main\\resources/credentials";
+    static final String DB_URL = "jdbc:postgresql://localhost:5432/postgres";
 //    static final String DB_URL = "jdbc:h2:~/credentials;DB_CLOSE_DELAY=-1";
 
 
     @FXML
     void onLoginButton() throws SQLException {
-        conn = DriverManager.getConnection(DB_URL);
+        conn = DriverManager.getConnection(DB_URL, "postgres", "12345");
+        credentialsDao.nullingAmountOfMessages(conn);
         String login = loginField.getText();
         String pass = passField.getText();
         this.login = login;
@@ -211,10 +215,20 @@ public class Main extends Application {
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(root, 800, 500));
         primaryStage.show();
+//        primaryStage.setOnCloseRequest(event -> {
+//            System.out.println("Stage is closing");
+//            try {
+//                oos[0].write("/closeApp" + "\n");
+//                oos[0].flush();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//        });
     }
 
     @FXML
-    public void initialize() throws IOException {
+    public void initialize() throws SQLException {
         controller = new Controller();
         setLoginScene();
 //
@@ -321,8 +335,9 @@ public class Main extends Application {
 //                            rect.setHeight(23);
 //                            rect.setX(54);
 //                            rect.setY(32 + 23 * idOfMessage);
+
                             mapOfRectangles.put(idOfMessage, rect);
-                            mapOfRectangles.get(idOfMessage).setFill(colorMap.get(nameOfSender));
+                            mapOfRectangles.get(idOfMessage).setFill(credentialsDao.getColor(conn, nameOfSender));
                             mapOfRectangles.get(idOfMessage).setVisible(true);
 //                            Message message = new Message(rect, "kekkk");
                             observableList.add(new Message(mapOfRectangles.get(idOfMessage), mapOfMessages.get(idOfMessage)));
@@ -340,8 +355,10 @@ public class Main extends Application {
                                     for (Map.Entry<Integer, String> entry : mapOfMessages.entrySet()) {
                                         if (entry.getValue().split(":")[0].trim().contains(nameOfSender)) {
                                             mapOfRectangles.get(entry.getKey()).setFill(Color.BLACK);
-                                            mapOfRectangles.get(entry.getKey()).setVisible(true);
-                                            colorMap.put(nameOfSender, Color.BLACK);
+//                                            observableList.remove(idOfMessage);
+//                                            observableList.add(new Message(mapOfRectangles.get(idOfMessage), mapOfMessages.get(idOfMessage)));
+//                                            mapOfRectangles.get(entry.getKey()).setVisible(true);
+                                            credentialsDao.updateColor(conn, nameOfSender, Color.BLACK);
                                         }
                                     }
                                     break;
@@ -349,8 +366,10 @@ public class Main extends Application {
                                     for (Map.Entry<Integer, String> entry : mapOfMessages.entrySet()) {
                                         if (entry.getValue().split(":")[0].trim().contains(nameOfSender)) {
                                             mapOfRectangles.get(entry.getKey()).setFill(Color.GREEN);
-                                            mapOfRectangles.get(entry.getKey()).setVisible(true);
-                                            colorMap.put(nameOfSender, Color.GREEN);
+//                                            observableList.remove(idOfMessage);
+//                                            observableList.add(new Message(mapOfRectangles.get(idOfMessage), mapOfMessages.get(idOfMessage)));
+//                                            mapOfRectangles.get(entry.getKey()).setVisible(true);
+                                            credentialsDao.updateColor(conn, nameOfSender, Color.GREEN);
                                         }
                                     }
                                     break;
@@ -358,8 +377,10 @@ public class Main extends Application {
                                     for (Map.Entry<Integer, String> entry : mapOfMessages.entrySet()) {
                                         if (entry.getValue().split(":")[0].trim().contains(nameOfSender)) {
                                             mapOfRectangles.get(entry.getKey()).setFill(Color.BLUE);
-                                            mapOfRectangles.get(entry.getKey()).setVisible(true);
-                                            colorMap.put(nameOfSender, Color.BLUE);
+//                                            observableList.remove(idOfMessage);
+//                                            observableList.add(new Message(mapOfRectangles.get(idOfMessage), mapOfMessages.get(idOfMessage)));
+//                                            mapOfRectangles.get(entry.getKey()).setVisible(true);
+                                            credentialsDao.updateColor(conn, nameOfSender, Color.BLUE);
                                         }
                                     }
                                     break;
@@ -367,8 +388,10 @@ public class Main extends Application {
                                     for (Map.Entry<Integer, String> entry : mapOfMessages.entrySet()) {
                                         if (entry.getValue().split(":")[0].trim().contains(nameOfSender)) {
                                             mapOfRectangles.get(entry.getKey()).setFill(Color.RED);
-                                            mapOfRectangles.get(entry.getKey()).setVisible(true);
-                                            colorMap.put(nameOfSender, Color.RED);
+//                                            observableList.remove(idOfMessage);
+//                                            observableList.add(new Message(mapOfRectangles.get(idOfMessage), mapOfMessages.get(idOfMessage)));
+//                                            mapOfRectangles.get(entry.getKey()).setVisible(true);
+                                            credentialsDao.updateColor(conn, nameOfSender, Color.RED);
                                         }
                                     }
                                     break;
@@ -405,12 +428,21 @@ public class Main extends Application {
 
     @FXML
     private void onCheckAction() throws SQLException {
+        CategoryAxis xAxis = new CategoryAxis();
+        xAxis.setLabel("Users");
+
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel("Messages amount");
+
+        BarChart gist = new BarChart(xAxis, yAxis);
         XYChart.Series dataSeries1 = new XYChart.Series();
         for (Map.Entry<String, Integer> entry : credentialsDao.getMessagesStatistic(conn).entrySet()) {
             dataSeries1.getData().add(new XYChart.Data(entry.getKey(), entry.getValue()));
+//            Node n = gist.lookup("root");
+//            n.setStyle("-fx-bar-fill: red");
         }
         gist.getData().setAll(dataSeries1);
-        if (check.isSelected()) {
+//        if (check.isPressed()) {
 //            gist.setVisible(true);
             Stage stage = new Stage();
             stage.setTitle("");
@@ -428,9 +460,9 @@ public class Main extends Application {
             stage.show();
             flag = false;
 
-        } else {
-//            gist.setVisible(false);
-        }
+//        } else {
+////            gist.setVisible(false);
+//        }
 
     }
 
@@ -507,7 +539,7 @@ public class Main extends Application {
         showingField.setVisible(false);
         enteringField.setVisible(false);
         check.setVisible(false);
-        gist.setVisible(false);
+//        gist.setVisible(false);
         r1.setVisible(false);
         r2.setVisible(false);
         r3.setVisible(false);

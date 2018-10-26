@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="credentials" uuid="374f5c53-5563-4a5b-a4ee-cc4fa21057a7">
+    <data-source source="LOCAL" name="credentials" uuid="6b61b36e-f95b-4a32-970f-185989e41708">
       <driver-ref>h2.unified</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.h2.Driver</jdbc-driver>
-      <jdbc-url>jdbc:h2:E:\FOR_WORK\Универъ\Lab8GradleGuiClient\src\main\resources/credentials</jdbc-url>
+      <jdbc-url>jdbc:h2:$PROJECT_DIR$/src/main/resources/credentials</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="postgres@localhost" uuid="7371f7cb-77f9-45d3-8e5b-d4277b2d1ed3">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/postgres</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="testdb" uuid="c90b4eb6-8111-4330-8e8f-4cdaac614d2b">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/postgres</jdbc-url>
     </data-source>
   </component>
 </project>

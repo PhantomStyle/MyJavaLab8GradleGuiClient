@@ -14,7 +14,7 @@ public class Controller {
         main.showingField.setVisible(false);
         main.enteringField.setVisible(false);
         main.check.setVisible(false);
-        main.gist.setVisible(false);
+//        main.gist.setVisible(false);
         main.r1.setVisible(false);
         main.r2.setVisible(false);
         main.r3.setVisible(false);

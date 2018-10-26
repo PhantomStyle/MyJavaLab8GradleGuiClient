@@ -15,4 +15,18 @@ dependencies {
     compile group: 'ch.qos.logback', name:'logback-classic', version: '1.0.9'
     compile group: 'ch.qos.logback', name:'logback-core', version: '1.0.9'
     compile group: 'com.h2database', name: 'h2', version: '1.4.196'
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.1.1'
+
+}
+
+configurations.all {
+    resolutionStrategy {
+        eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.slf4j') {
+                details.useVersion "1.7.21"
+            }
+        }
+        resolutionStrategy.failOnVersionConflict()
+    }
 }
