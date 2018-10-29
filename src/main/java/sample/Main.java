@@ -2,8 +2,10 @@ package sample;
 
 import dao.CredentialsDao;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -23,6 +25,9 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
@@ -141,6 +146,7 @@ public class Main extends Application {
 
     private static Map<Integer, String> mapOfMessages = new HashMap<>();
     private static int idOfMessage = 0;
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
 //    private static Map<String, String> db = new HashMap<>();
 
@@ -159,8 +165,6 @@ public class Main extends Application {
 
     private String name = "";
 
-//    private Map<String, Integer> statMap = new HashMap<>();
-
     BufferedWriter writerForButtons = null;
 
     private boolean flag = true;
@@ -176,8 +180,6 @@ public class Main extends Application {
     private static Connection conn;
 
     static final String DB_URL = "jdbc:postgresql://localhost:5432/postgres";
-//    static final String DB_URL = "jdbc:h2:~/credentials;DB_CLOSE_DELAY=-1";
-
 
     @FXML
     void onLoginButton() throws SQLException {
@@ -210,21 +212,19 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        logger.info("Start client");
         stage = primaryStage;
         Parent root = FXMLLoader.load(getClass().getResource("/sample.fxml"));
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(root, 800, 500));
         primaryStage.show();
-//        primaryStage.setOnCloseRequest(event -> {
-//            System.out.println("Stage is closing");
-//            try {
-//                oos[0].write("/closeApp" + "\n");
-//                oos[0].flush();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//        });
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent t) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
     }
 
     @FXML
@@ -273,6 +273,7 @@ public class Main extends Application {
 
             @Override
             public void run() {
+                logger.info("Start sender");
                 System.out.println(1);
                 while (!socket.isOutputShutdown()) {
 
@@ -280,7 +281,7 @@ public class Main extends Application {
                         Thread.sleep(1000);
                         if (!clientCommand.equals("")) {
 
-                            System.out.println("Client start writing in channel...");
+                            logger.info("Client start writing in channel...");
 
                             clientCommand = name + ": " + clientCommand;
                             oos.write(clientCommand + "\n");
@@ -288,10 +289,10 @@ public class Main extends Application {
 
                             if (clientCommand.equalsIgnoreCase("quit")) {
 
-                                System.out.println("Client kill connections");
+                                logger.info("Client kill connections");
 
                                 if (ois.read() > -1) {
-                                    System.out.println("reading...");
+                                    logger.info("reading...");
                                     String in = ois.readUTF();
                                     System.out.println(in);
                                 }
@@ -315,6 +316,7 @@ public class Main extends Application {
         new Thread() {
             @Override
             public void run() {
+                logger.info("Start printer");
                 try {
                     Thread.sleep(1500);
                 } catch (InterruptedException e) {
@@ -323,32 +325,26 @@ public class Main extends Application {
                 while (true) {
                     try {
                         Thread.sleep(1500);
-                        System.out.println("reading...");
+                        logger.info("reading...");
                         String in = reader.readLine();
                         if (!in.startsWith("$$")) {
-                            ImageView imageView = new ImageView();
-                            System.out.println("After reading");
+                            logger.info("After reading");
                             mapOfMessages.put(idOfMessage, in);
                             String nameOfSender = in.split(":")[0];
                             Rectangle rect = new Rectangle(54, 32 + 23 * idOfMessage, 18, 23);
-//                            rect.setWidth(18);
-//                            rect.setHeight(23);
-//                            rect.setX(54);
-//                            rect.setY(32 + 23 * idOfMessage);
 
                             mapOfRectangles.put(idOfMessage, rect);
                             mapOfRectangles.get(idOfMessage).setFill(credentialsDao.getColor(conn, nameOfSender));
                             mapOfRectangles.get(idOfMessage).setVisible(true);
-//                            Message message = new Message(rect, "kekkk");
                             observableList.add(new Message(mapOfRectangles.get(idOfMessage), mapOfMessages.get(idOfMessage)));
                             rectColumn.setCellValueFactory(new PropertyValueFactory<Message, Rectangle>("rectangle"));
                             messageColumn.setCellValueFactory(new PropertyValueFactory<Message, String>("text"));
                             showingField.setItems(observableList);
                             idOfMessage++;
                             String tempName = in.split(":")[0].trim();
-//                            statMap.put(tempName, statMap.get(tempName) + 1);
                             credentialsDao.incrementMessagesAmount(conn, tempName);
                         } else {
+                            logger.info("Changing color");
                             String nameOfSender = in.split(" ")[1].trim();
                             switch (in.split(" ")[2].trim()) {
                                 case "Black":
@@ -420,7 +416,7 @@ public class Main extends Application {
 
     @FXML
     private void handleButton1Action() {
-
+        logger.info("Send button pressed");
         clientCommand = enteringField.getText();
         enteringField.clear();
 
@@ -428,6 +424,7 @@ public class Main extends Application {
 
     @FXML
     private void onCheckAction() throws SQLException {
+        logger.info("Statistic button pressed");
         CategoryAxis xAxis = new CategoryAxis();
         xAxis.setLabel("Users");
 
@@ -438,36 +435,29 @@ public class Main extends Application {
         XYChart.Series dataSeries1 = new XYChart.Series();
         for (Map.Entry<String, Integer> entry : credentialsDao.getMessagesStatistic(conn).entrySet()) {
             dataSeries1.getData().add(new XYChart.Data(entry.getKey(), entry.getValue()));
-//            Node n = gist.lookup("root");
-//            n.setStyle("-fx-bar-fill: red");
         }
         gist.getData().setAll(dataSeries1);
-//        if (check.isPressed()) {
-//            gist.setVisible(true);
-            Stage stage = new Stage();
-            stage.setTitle("");
-            stage.setWidth(500);
-            stage.setHeight(500);
-            Scene scene = new Scene(new Group());
+        Stage stage = new Stage();
+        stage.setTitle("");
+        stage.setWidth(500);
+        stage.setHeight(500);
+        Scene scene = new Scene(new Group());
 
-            VBox root = new VBox();
+        VBox root = new VBox();
 
 
-            root.getChildren().addAll(gist);
-            scene.setRoot(root);
+        root.getChildren().addAll(gist);
+        scene.setRoot(root);
 
-            stage.setScene(scene);
-            stage.show();
-            flag = false;
-
-//        } else {
-////            gist.setVisible(false);
-//        }
+        stage.setScene(scene);
+        stage.show();
+        flag = false;
 
     }
 
     @FXML
     private void onBlue() throws IOException {
+        logger.info("Changing color on blue of " + name);
         flag = true;
         for (Map.Entry<Integer, String> entry : mapOfMessages.entrySet()) {
             if ((mapOfRectangles.get(entry.getKey()).getFill()).equals(Color.BLUE)) {
@@ -482,6 +472,7 @@ public class Main extends Application {
 
     @FXML
     private void onRed() throws IOException {
+        logger.info("Changing color on red of " + name);
         flag = true;
         for (Map.Entry<Integer, String> entry : mapOfMessages.entrySet()) {
             if ((mapOfRectangles.get(entry.getKey()).getFill()).equals(Color.RED)) {
@@ -496,6 +487,7 @@ public class Main extends Application {
 
     @FXML
     private void onBlack() throws IOException {
+        logger.info("Changing color on black of " + name);
         flag = true;
         for (Map.Entry<Integer, String> entry : mapOfMessages.entrySet()) {
             if ((mapOfRectangles.get(entry.getKey()).getFill()).equals(Color.BLACK)) {
@@ -510,6 +502,7 @@ public class Main extends Application {
 
     @FXML
     private void onGreen() throws IOException {
+        logger.info("Changing color on green of " + name);
         flag = true;
         for (Map.Entry<Integer, String> entry : mapOfMessages.entrySet()) {
             if ((mapOfRectangles.get(entry.getKey()).getFill()).equals(Color.GREEN)) {
@@ -523,6 +516,7 @@ public class Main extends Application {
     }
 
     private void showColorIsUsedMessage() {
+        logger.info("Showing color is used message");
         Stage st = new Stage();
         st.initModality(Modality.APPLICATION_MODAL);
         st.initOwner(stage);
@@ -535,11 +529,11 @@ public class Main extends Application {
     }
 
     public void setLoginScene() {
+        logger.info("Setting login scene");
         button.setVisible(false);
         showingField.setVisible(false);
         enteringField.setVisible(false);
         check.setVisible(false);
-//        gist.setVisible(false);
         r1.setVisible(false);
         r2.setVisible(false);
         r3.setVisible(false);
@@ -562,6 +556,7 @@ public class Main extends Application {
     }
 
     public void setIpChoseScene() {
+        logger.info("Setting ip chose scene");
         loginField.setVisible(false);
         passField.setVisible(false);
         buttonLogin.setVisible(false);
@@ -573,6 +568,7 @@ public class Main extends Application {
     }
 
     public void setChatScene() {
+        logger.info("Set chat scene");
         check.setVisible(true);
         button.setVisible(true);
         showingField.setVisible(true);
